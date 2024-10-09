@@ -51,8 +51,6 @@ float4x4 matrix = mul(
 	auto start = std::chrono::high_resolution_clock::now();
 	rasterizer->clear_render_target({0,0,0});
 	auto stop = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<float, std::milli> clear_duration = stop-start;
-	std::cout<<"Clearing took "<<clear_duration.count()<<"ms\n";
 
 	start = std::chrono::high_resolution_clock::now();
 	for(size_t shape_id=0; shape_id<model->get_index_buffers().size(); shape_id++){
