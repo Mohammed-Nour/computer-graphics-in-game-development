@@ -61,12 +61,6 @@ void model::allocate_buffers(const std::vector<tinyobj::shape_t>& shapes)
 		}
 		vertex_buffers.push_back(std::make_shared<cg::resource<cg::vertex>>(vertex_buffer_size));
 		index_buffers.push_back(std::make_shared<cg::resource<unsigned int>>(index_buffer_size));
-
-		// std::cout << "Vertex buffer size "<< vertex_buffer_size * sizeof(cg::vertex) << "\n";
-		// std::cout << "Index buffer size "<< index_buffer_size * sizeof(unsigned int) << "\n";
-
-		// std::cout << "Pure vertex buffer size "<<index_buffer_size * sizeof(cg::vertex) << "\n";
-		// std::cout << "Saving " << index_buffer_size * sizeof(cg::vertex) - vertex_buffer_size * sizeof(cg::vertex) - index_buffer_size * sizeof(unsigned int) << "\n";
 	}
 	textures.resize(shapes.size());
 }
