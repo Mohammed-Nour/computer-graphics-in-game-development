@@ -148,7 +148,7 @@ namespace cg::renderer
 	inline void raytracer<VB, RT>::clear_render_target(
 			const RT& in_clear_value)
 	{
-		for (size_t i = 0; i < render_target->get_number_of_elements(); i++) {
+		for (size_t i = 0; i < render_target->count(); i++) {
 			render_target->item(i) = in_clear_value;
 			history->item(i) = float3{0.f, 0.f, 0.f};
 		}
@@ -192,24 +192,28 @@ namespace cg::renderer
 			float3 position, float3 direction,
 			float3 right, float3 up, size_t depth, size_t accumulation_num)
 	{
-		for (size_t frame_id = 0; frame_id < accumulation_num; frame_id++) {
-			std::cout << "Tracing " << frame_id << "/" << accumulation_num << " frame\n";
+
+		float frame_weight = 1.f / static_cast<float>(accumulation_num);
+
+		for (int frame_id = 0; frame_id < accumulation_num; frame_id++) {
+			std::cout << "Tracing frame #" << frame_id + 1 << "\n";
 			float2 jitter = get_jitter(frame_id);
 #pragma omp parallel for
 			for (int x = 0; x < width; x++) {
 				for (int y = 0; y < height; y++) {
-					float u = (2.f * x + jitter.x) / static_cast<float>(width) - 1.f;
-					float v = (2.f * y + jitter.y) / static_cast<float>(height) - 1.f;
+					float u = (2.f * x + jitter.x) / static_cast<float>(width - 1) - 1.f;
+					float v = (2.f * y + jitter.y) / static_cast<float>(height - 1) - 1.f;
 					u *= static_cast<float>(width) / static_cast<float>(height);
-					float3 ray_direction = direction + right * u - up * v;
+					float3 ray_direction = direction + u * right - v * up;
+					ray ray(position, ray_direction);
 
-					ray primary_ray(position, ray_direction);
-					payload payload = trace_ray(primary_ray, depth);
+					payload payload = trace_ray(ray, depth);
 
-					history->item(x, y) += sqrt(payload.color.to_float3() / accumulation_num);
-					if (frame_id + 1 == accumulation_num) {
-						render_target->item(x, y) = RT::from_float3(history->item(x, y));
-					}
+					auto& history_pixel = history->item(x, y);
+					history_pixel += sqrt(payload.color.to_float3() * frame_weight);
+
+					if (frame_id == accumulation_num - 1)
+						render_target->item(x, y) = RT::from_float3(history_pixel);
 				}
 			}
 		}
@@ -243,10 +247,12 @@ namespace cg::renderer
 			}
 		}
 
-		if (closest_hit_payload.t < max_t) {
+		if (closest_triangle != nullptr && closest_hit_payload.t < max_t) {
 			if (closest_hit_shader)
-				return closest_hit_shader(ray, closest_hit_payload, *closest_triangle, depth);
+				return closest_hit_shader(ray, closest_hit_payload, *closest_triangle,
+										  depth);
 		}
+
 		return miss_shader(ray);
 	}
 
