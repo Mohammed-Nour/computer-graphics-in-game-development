@@ -472,14 +472,16 @@ void cg::renderer::dx12_renderer::populate_command_list()
 	command_list->RSSetViewports(1, &view_port);
 	command_list->RSSetScissorRects(1, &scissor_rect);
 
-	command_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
 	D3D12_RESOURCE_BARRIER begin_barriers[] = {
 			CD3DX12_RESOURCE_BARRIER::Transition(
 					render_targets[frame_index].Get(),
 					D3D12_RESOURCE_STATE_PRESENT,
 					D3D12_RESOURCE_STATE_RENDER_TARGET)};
+
 	command_list->ResourceBarrier(_countof(begin_barriers), begin_barriers);
+
+
+
 
 	//Drawing
 	command_list->OMSetRenderTargets(
@@ -490,11 +492,14 @@ void cg::renderer::dx12_renderer::populate_command_list()
 			rtv_heap.get_cpu_descriptor_handle(frame_index),
 			clear_color, 0, nullptr);
 
-	for (size_t s = 0; s < model->get_vertex_buffers().size(); s++) {
+	command_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+
+	for (size_t s = 0; s < model->get_index_buffers().size(); s++) {
 		command_list->IASetVertexBuffers(0, 1, &vertex_buffer_views[s]);
 		command_list->IASetIndexBuffer(&index_buffer_views[s]);
 		command_list->DrawIndexedInstanced(
-				static_cast<UINT>(model->get_index_buffers()[s]->get_number_of_elements()),
+				static_cast<UINT>(model->get_index_buffers()[s]->count()),
 				1, 0, 0, 0);
 	}
 
