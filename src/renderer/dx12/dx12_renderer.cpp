@@ -380,8 +380,8 @@ void cg::renderer::dx12_renderer::load_assets()
 	create_command_allocators();
 	create_command_list();
 
-	vertex_buffers.resize(model->get_vertex_buffers());
-	vertex_buffers_views.resize(model->get_vertex_buffers());
+	vertex_buffers.resize(model->get_vertex_buffers().size());
+	vertex_buffers_views.resize(model->get_vertex_buffers().size());
 
 	index_buffers.resize(model.get_index_buffers().size());
 	index_buffer_views.resize(model.get_index_buffers().size());
