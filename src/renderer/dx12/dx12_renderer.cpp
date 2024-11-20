@@ -48,8 +48,8 @@ void cg::renderer::dx12_renderer::update()
 {
 	auto now = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<float> duration = now - current_time;
-	frame_duration = duration.count();
 	current_time = now;
+	frame_duration = duration.count();
 
 	cb.mwpMatrix = camera->get_dxm_mvp_matrix();
 	memcpy(constant_buffer_data_begin, &cb, sizeof(cb));
@@ -72,7 +72,7 @@ ComPtr<IDXGIFactory4> cg::renderer::dx12_renderer::get_dxgi_factory()
 	UINT dxgi_factory_flags = 0;
 #ifdef _DEBUG
 	ComPtr<ID3D12Debug> debug_controller;
-	if (SUCCEEDED(IID_PPV_ARGS(&debug_controller)))
+	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller))))
 	{
 		debug_controller->EnableDebugLayer();
 		dxgi_factory_flags |= DXGI_CREATE_FACTORY_DEBUG;
